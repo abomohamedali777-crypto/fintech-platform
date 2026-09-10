@@ -11,7 +11,10 @@ export default function Footer({
     document.querySelector(selector)?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const columns: { label: string; items: { label: string; action: () => void }[] }[] = [
+  const columns: {
+    label: string;
+    items: { label: string; href?: string; action?: () => void }[];
+  }[] = [
     {
       label: "Platform",
       items: [
@@ -32,8 +35,8 @@ export default function Footer({
     {
       label: "Legal",
       items: [
-        { label: "Privacy Policy", action: () => onOpenLegal("privacy") },
-        { label: "Terms & Conditions", action: () => onOpenLegal("terms") },
+        { label: "Privacy Policy", href: "/privacy" },
+        { label: "Terms & Conditions", href: "/terms" },
         { label: "SLA Overview", action: () => onOpenLegal("terms") },
       ],
     },
@@ -69,12 +72,21 @@ export default function Footer({
               <ul className="mt-4 space-y-2.5">
                 {col.items.map((item) => (
                   <li key={item.label}>
-                    <button
-                      onClick={item.action}
-                      className="text-[13px] font-medium text-slate transition-colors duration-300 ease-out hover:text-ink"
-                    >
-                      {item.label}
-                    </button>
+                    {item.href ? (
+                      <a
+                        href={item.href}
+                        className="text-[13px] font-medium text-slate transition-colors duration-300 ease-out hover:text-ink"
+                      >
+                        {item.label}
+                      </a>
+                    ) : (
+                      <button
+                        onClick={item.action}
+                        className="text-[13px] font-medium text-slate transition-colors duration-300 ease-out hover:text-ink"
+                      >
+                        {item.label}
+                      </button>
+                    )}
                   </li>
                 ))}
               </ul>

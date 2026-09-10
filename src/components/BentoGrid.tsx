@@ -200,8 +200,8 @@ export default function BentoGrid() {
                         <span
                           className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
                             tx.status === "Settled"
-                              ? "bg-emerald-50 text-emerald-600"
-                              : "bg-amber-50 text-amber-600"
+                              ? "bg-emerald-50 text-emerald-700"
+                              : "bg-amber-50 text-amber-800"
                           }`}
                         >
                           {tx.status}

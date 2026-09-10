@@ -33,9 +33,14 @@ export default function LegalModal({
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
+    const focusTimer = setTimeout(() => {
+      panelRef.current?.focus();
+    }, 50);
+
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = prev;
+      clearTimeout(focusTimer);
     };
   }, [open, initialTab, onClose]);
 
@@ -88,10 +93,13 @@ export default function LegalModal({
           </button>
         </div>
 
-        <div className="flex gap-1.5 border-b hairline bg-mist/40 px-8 py-3">
+        <div className="flex gap-1.5 border-b hairline bg-mist/40 px-8 py-3" role="tablist" aria-label="Legal documents">
           {(["privacy", "terms"] as LegalTab[]).map((t) => (
             <button
               key={t}
+              role="tab"
+              aria-selected={tab === t}
+              aria-controls="legal-doc-panel"
               onClick={() => setTab(t)}
               className={`rounded-full px-4 py-1.5 text-[12px] font-medium transition-all duration-300 ease-out ${
                 tab === t
@@ -104,7 +112,7 @@ export default function LegalModal({
           ))}
         </div>
 
-        <div ref={panelRef} className="flex-1 overflow-y-auto px-8 py-7">
+        <div ref={panelRef} className="flex-1 overflow-y-auto px-8 py-7" role="tabpanel" aria-label={tab === "privacy" ? "Privacy Policy" : "Terms and Conditions"} tabIndex={-1}>
           <div key={tab} className="animate-fade-in space-y-7">
             {active.map((section) => {
               const Icon = section.icon;

@@ -3,11 +3,18 @@
 import { useState } from "react";
 import { TrendingDown } from "lucide-react";
 import { Calculator as CalculatorIcon } from "lucide-react";
-
-const MONTHLY_TRANSACTIONS = 30000;
+import {
+  volumeTier,
+  bankMonthlyCost,
+  platformMonthlyCost,
+  annualSavings,
+  savingsPercentage,
+  avgTransactionSize,
+} from "@/lib/pricing";
 
 const sliderMin = 1000;
 const sliderMax = 50000;
+const maxCostForBar = 65000;
 
 function fmtUSD(n: number) {
   return new Intl.NumberFormat("en-US", {
@@ -20,23 +27,11 @@ function fmtUSD(n: number) {
 export default function Calculator() {
   const [monthlyVolume, setMonthlyVolume] = useState(12000000);
 
-  const tier = Math.max(1, Math.min(4, Math.floor(monthlyVolume / 5000000) + 1));
-
-  const bankFee = 0.0125;
-  const platformFee = 0.0045;
-
-  const bankPrice =
-    monthlyVolume * bankFee +
-    (monthlyVolume / MONTHLY_TRANSACTIONS) * 0.25 +
-    2500;
-  const platformPrice =
-    monthlyVolume * platformFee +
-    (monthlyVolume / MONTHLY_TRANSACTIONS) * 0.04 +
-    0;
-  const savings = Math.max(0, bankPrice - platformPrice);
-  const savingsPct = bankPrice > 0 ? (savings / bankPrice) * 100 : 0;
-
-  const estAnnualSavings = savings * 12;
+  const tier = volumeTier(monthlyVolume);
+  const bankPrice = bankMonthlyCost(monthlyVolume);
+  const platformPrice = platformMonthlyCost(monthlyVolume);
+  const estAnnualSavings = annualSavings(monthlyVolume);
+  const savingsPct = savingsPercentage(monthlyVolume);
 
   return (
     <section id="infrastructure" className="scroll-mt-20 bg-mist py-24">
@@ -90,7 +85,7 @@ export default function Calculator() {
                     Avg. transaction size
                   </span>
                   <span className="text-[13px] font-semibold text-ink">
-                    {fmtUSD(monthlyVolume / MONTHLY_TRANSACTIONS)}
+                    {fmtUSD(avgTransactionSize(monthlyVolume))}
                   </span>
                 </div>
                 <div className="flex items-center justify-between rounded-xl bg-mist px-4 py-3">
@@ -121,7 +116,7 @@ export default function Calculator() {
                 <div className="h-2 overflow-hidden rounded-full bg-mist">
                   <div
                     className="h-full rounded-full bg-slate/60 transition-all duration-700 ease-out"
-                    style={{ width: `${Math.min(100, (bankPrice / 65000) * 100)}%` }}
+                    style={{ width: `${Math.min(100, (bankPrice / maxCostForBar) * 100)}%` }}
                   />
                 </div>
 
@@ -136,7 +131,7 @@ export default function Calculator() {
                 <div className="h-2 overflow-hidden rounded-full bg-mist">
                   <div
                     className="h-full rounded-full bg-accent transition-all duration-700 ease-out"
-                    style={{ width: `${Math.min(100, (platformPrice / 65000) * 100)}%` }}
+                    style={{ width: `${Math.min(100, (platformPrice / maxCostForBar) * 100)}%` }}
                   />
                 </div>
               </div>
@@ -156,7 +151,7 @@ export default function Calculator() {
                   <button className="rounded-full bg-accent px-4 py-2 text-[12px] font-semibold text-white transition-all duration-300 ease-out hover:brightness-110">
                     Get exact pricing
                   </button>
-                  <span className="text-[11px] text-white/40">
+                  <span className="text-[11px] text-white/60">
                     No commitment required
                   </span>
                 </div>

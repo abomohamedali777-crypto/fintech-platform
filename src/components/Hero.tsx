@@ -8,7 +8,7 @@ export default function Hero() {
         <div className="mx-auto max-w-3xl text-center">
           <span className="inline-flex items-center gap-2 rounded-full border hairline bg-white px-4 py-1.5 text-[12px] font-medium text-slate shadow-micro animate-fade-in-up">
             <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-            ISO/IEC 27001 · SOC 2 Type II Certified Infrastructure
+            Aligned to ISO/IEC 27001 &amp; SOC 2 control frameworks
           </span>
           <h1
             className="mt-7 text-4xl font-semibold leading-[1.08] tracking-tight text-ink sm:text-5xl md:text-6xl animate-fade-in-up delay-100"

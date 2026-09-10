@@ -21,7 +21,7 @@ const pillars = [
   {
     icon: Fingerprint,
     title: "HSM Key Custody",
-    desc: "Cryptographic keys isolated in hardware security modules, compliant with ISO/IEC 27001 and SOC 2 Type II.",
+    desc: "Cryptographic keys isolated in hardware security modules, engineered against ISO/IEC 27001 and SOC 2 control frameworks.",
   },
   {
     icon: Radar,
@@ -84,12 +84,12 @@ export default function Security() {
 
         <div className="mx-auto mt-12 flex max-w-4xl flex-col gap-6 rounded-2xl border hairline bg-mist/50 p-8 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-x-10 gap-y-4">
-            {[
-              ["ISO/IEC 27001", "Certified"],
-              ["SOC 2", "Type II"],
-              ["GDPR", "SCC Based"],
-              ["PCI DSS", "Merchant Scope"],
-            ].map(([name, scope]) => (
+{[
+            ["ISO/IEC 27001", "Aligned"],
+            ["SOC 2", "Aligned"],
+            ["GDPR", "SCC Based"],
+            ["PCI DSS", "Merchant Scope"],
+          ].map(([name, scope]) => (
               <div key={name}>
                 <p className="text-[14px] font-semibold tracking-tight text-ink">{name}</p>
                 <p className="text-[11px] font-medium uppercase tracking-wider text-slate">{scope}</p>

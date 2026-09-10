@@ -12,7 +12,7 @@ const config: Config = {
         ink: "#1D1D1F",
         canvas: "#FFFFFF",
         mist: "#F5F5F7",
-        slate: "#86868B",
+        slate: "#6E6E73",
         accent: "#0066CC",
       },
       fontFamily: {

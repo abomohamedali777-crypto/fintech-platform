@@ -47,7 +47,7 @@ export const privacyPolicy: LegalSection[] = [
     heading: "4. Data Protection & Encryption Standards",
     icon: Lock,
     paragraphs: [
-      "All data in transit is encrypted using TLS 1.3 standards. Data at rest is secured via AES-256 enterprise encryption. Hardware security modules (HSM) manage cryptographic key storage in compliance with ISO/IEC 27001 and SOC 2 Type II benchmarks.",
+      "All data in transit is encrypted using TLS 1.3 standards. Data at rest is secured via AES-256 enterprise encryption. Hardware security modules (HSM) manage cryptographic key storage, engineered in alignment with the control requirements of ISO/IEC 27001 and SOC 2 Type II.",
     ],
   },
   {
@@ -122,7 +122,8 @@ export const termsAndConditions: LegalSection[] = [
     heading: "7. Governing Law & Jurisdiction",
     icon: Scale,
     paragraphs: [
-      "These Terms shall be governed and interpreted under the laws of the United Arab Emirates (and/or Delaware, USA, where corporate structuring dictates). Disputes shall be submitted to binding arbitration in accordance with institutional arbitration rules.",
+      "These Terms shall be governed by and interpreted in accordance with the laws of the United Arab Emirates, applied in the Emirate of Dubai.",
+      "Any dispute arising out of or in connection with these Terms shall be finally settled by arbitration conducted in accordance with the rules of the Dubai International Arbitration Centre (DIAC) in force at the time of the dispute. The seat of arbitration shall be the Dubai International Financial Centre, Dubai, United Arab Emirates, and the language of the proceedings shall be English.",
     ],
   },
 ];

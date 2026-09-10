@@ -1,16 +1,54 @@
 "use client";
 
 import { useState } from "react";
-import { Check, ArrowRight, ShieldCheck, Lock } from "lucide-react";
+import { Check, ArrowRight, ShieldCheck, Lock, Loader2, AlertCircle } from "lucide-react";
 
 export default function RequestAccess() {
   const [email, setEmail] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+  const [company, setCompany] = useState("");
+  const [status, setStatus] = useState<
+    { state: "idle" } | { state: "loading" } | { state: "success" } | { state: "error"; message: string }
+  >({ state: "idle" });
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return;
-    setSubmitted(true);
+    setStatus({ state: "loading" });
+
+    try {
+      const res = await fetch("/api/access", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, company }),
+      });
+
+      if (res.status === 429) {
+        const data = (await res.json().catch(() => null)) as { message?: string } | null;
+        setStatus({
+          state: "error",
+          message: data?.message ?? "Too many requests. Please try again later.",
+        });
+        return;
+      }
+
+      if (res.status === 422) {
+        setStatus({ state: "error", message: "Please enter a valid enterprise email address." });
+        return;
+      }
+
+      if (!res.ok) {
+        const data = (await res.json().catch(() => null)) as { message?: string } | null;
+        setStatus({
+          state: "error",
+          message: data?.message ?? "Request failed. Please try again.",
+        });
+        return;
+      }
+
+      setStatus({ state: "success" });
+    } catch {
+      setStatus({ state: "error", message: "Network error. Please check your connection and try again." });
+    }
   };
 
   return (
@@ -37,7 +75,7 @@ export default function RequestAccess() {
         </div>
 
         <div className="mx-auto mt-10 max-w-xl">
-          {submitted ? (
+          {status.state === "success" ? (
             <div className="rounded-2xl border border-white/10 bg-white/5 p-8 text-center animate-modal-in">
               <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-accent">
                 <Check className="h-6 w-6 text-white" strokeWidth={2.5} />
@@ -57,6 +95,15 @@ export default function RequestAccess() {
               className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 p-3 sm:flex-row"
             >
               <input
+                type="text"
+                value={company}
+                onChange={(e) => setCompany(e.target.value)}
+                className="hidden"
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+              />
+              <input
                 type="email"
                 required
                 value={email}
@@ -66,19 +113,36 @@ export default function RequestAccess() {
               />
               <button
                 type="submit"
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-accent px-6 py-3.5 text-[14px] font-semibold text-white shadow-micro transition-all duration-300 ease-out hover:shadow-lift hover:brightness-110"
+                disabled={status.state === "loading"}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-accent px-6 py-3.5 text-[14px] font-semibold text-white shadow-micro transition-all duration-300 ease-out hover:shadow-lift hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
               >
-                Request Access
-                <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
+                {status.state === "loading" ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2.25} />
+                    Submitting
+                  </>
+                ) : (
+                  <>
+                    Request Access
+                    <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
+                  </>
+                )}
               </button>
             </form>
           )}
 
-          <p className="mt-4 flex items-center justify-center gap-1.5 text-[11px] font-medium text-white/40">
+          {status.state === "error" && (
+            <div className="mx-auto mt-4 flex max-w-xl items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-[13px] font-medium text-white/80 animate-fade-in">
+              <AlertCircle className="h-4 w-4 shrink-0 text-red-400" strokeWidth={2.25} />
+              {status.message}
+            </div>
+          )}
+
+          <p className="mt-4 flex items-center justify-center gap-1.5 text-[11px] font-medium text-white/60">
             <Lock className="h-3.5 w-3.5" strokeWidth={2} />
             Transmission encrypted with TLS 1.3 · Reviewed under SOC 2 Type II controls
           </p>
-          <div className="mt-6 flex items-center justify-center gap-3 text-[12px] font-medium text-white/40">
+          <div className="mt-6 flex items-center justify-center gap-3 text-[12px] font-medium text-white/60">
             <ShieldCheck className="h-4 w-4" strokeWidth={2} />
             By submitting, you agree to our terms of service and privacy policy.
           </div>
