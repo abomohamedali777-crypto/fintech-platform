@@ -4,11 +4,30 @@ import { useState } from "react";
 import { Check, ArrowRight, ShieldCheck, Lock, Loader2, AlertCircle } from "lucide-react";
 import { useSettings } from "@/lib/site";
 import Reveal from "@/components/Reveal";
+import Magnetic from "@/components/Magnetic";
+import SectionHeader from "@/components/SectionHeader";
+import type { TKey } from "@/data/translations";
 
-export default function RequestAccess() {
+const volumeOptions = [
+  "",
+  "$0 – $5M / month",
+  "$5M – $25M / month",
+  "$25M – $100M / month",
+  "$100M+ / month",
+];
+
+export default function RequestAccess({
+  onOpenPrivacy,
+}: {
+  onOpenPrivacy: () => void;
+}) {
   const { t } = useSettings();
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState("");
+  const [volume, setVolume] = useState("");
+  const [fax, setFax] = useState("");
+  const [consent, setConsent] = useState(false);
+  const [consentError, setConsentError] = useState(false);
   const [status, setStatus] = useState<
     { state: "idle" } | { state: "loading" } | { state: "success" } | { state: "error"; message: string }
   >({ state: "idle" });
@@ -16,14 +35,25 @@ export default function RequestAccess() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return;
+
+    if (!consent) {
+      setConsentError(true);
+      return;
+    }
+
     setStatus({ state: "loading" });
 
     try {
       const res = await fetch("/api/access", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, company }),
+        body: JSON.stringify({ email, company, volume, fax }),
       });
+
+      if (res.status === 413) {
+        setStatus({ state: "error", message: t("err.tooLarge") });
+        return;
+      }
 
       if (res.status === 429) {
         const data = (await res.json().catch(() => null)) as { message?: string } | null;
@@ -54,110 +84,216 @@ export default function RequestAccess() {
     }
   };
 
-  return (
-    <section id="access" className="relative scroll-mt-20 overflow-hidden bg-panel py-24">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(ellipse_50%_100%_at_50%_0%,rgba(0,102,204,0.18),transparent)]" />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute right-[8%] top-16 h-56 w-56 rounded-full bg-accent/10 blur-3xl animate-float-delayed"
-      />
-      <div className="relative mx-auto max-w-6xl px-6">
-        <div className="mx-auto max-w-2xl text-center">
-          <Reveal>
-            <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl md:text-5xl">
-              {t("access.title")}
-            </h2>
-          </Reveal>
-          <Reveal delay={0.08}>
-            <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-white/60">
-              {t("access.sub")}
-            </p>
-          </Reveal>
-          <Reveal delay={0.16}>
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[12px] font-medium text-white/50">
-              <span className="inline-flex items-center gap-1.5">
-                <Check className="h-3.5 w-3.5 text-white/70" strokeWidth={2.5} />
-                {t("access.check1")}
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <Check className="h-3.5 w-3.5 text-white/70" strokeWidth={2.5} />
-                {t("access.check2")}
-              </span>
-            </div>
-          </Reveal>
-        </div>
+  const renderConsent = (raw: string) => {
+    const bits = raw.split(/(\[\[privacy\]\])/);
+    return bits.map((part, i) => {
+      if (part === "[[privacy]]") {
+        return (
+          <button
+            key={i}
+            type="button"
+            onClick={onOpenPrivacy}
+            className="font-semibold text-ink underline decoration-slate/40 underline-offset-2 transition-colors duration-300 ease-out hover:text-accent"
+          >
+            {t("privacyPolicy")}
+          </button>
+        );
+      }
+      return <span key={i}>{part}</span>;
+    });
+  };
 
-        <Reveal delay={0.12} className="mx-auto mt-10 max-w-xl">
-          {status.state === "success" ? (
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-8 text-center animate-modal-in">
-              <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-accent">
-                <Check className="h-6 w-6 text-white" strokeWidth={2.5} />
-              </span>
-              <h3 className="mt-4 text-xl font-semibold tracking-tight text-white">
-                {t("access.success")}
-              </h3>
-              <p className="mt-2 text-[14px] leading-relaxed text-white/60">
-                {t("access.successBody", { email })}
+  const checklist: { n: string; k: TKey }[] = [
+    { n: "01", k: "access.check1" },
+    { n: "02", k: "access.check2" },
+  ];
+
+  return (
+    <section id="access" className="scroll-mt-20 border-t border-slate-800 bg-mist/40 py-24 dark:bg-canvas">
+      <div className="mx-auto max-w-[1200px] px-6">
+        <Reveal>
+          <SectionHeader
+            index="07"
+            eyebrow={t("access.badge")}
+            title={t("access.title")}
+            sub={t("access.sub")}
+          />
+        </Reveal>
+
+        <div className="mt-12 grid gap-8 lg:grid-cols-12">
+          <div className="lg:col-span-5">
+            <ul className="divide-y divide-slate-800/50 border-y border-slate-800">
+              {checklist.map((row) => (
+                <li key={row.n} className="flex items-center gap-4 py-4">
+                  <span className="w-8 shrink-0 font-mono text-[12px] tracking-tight text-slate/50">
+                    {row.n}
+                  </span>
+                  <span className="flex items-center gap-2.5 text-[14px] font-medium text-ink">
+                    <Check className="h-4 w-4 shrink-0 text-emerald-500" strokeWidth={2.25} />
+                    {t(row.k)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-6 space-y-3">
+              <p className="flex items-start gap-2.5 font-mono text-[11px] uppercase leading-relaxed tracking-tight text-slate">
+                <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0" strokeWidth={2} />
+                {t("access.encrypt")}
+              </p>
+              <p className="flex items-start gap-2.5 font-mono text-[11px] uppercase leading-relaxed tracking-tight text-slate">
+                <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" strokeWidth={2} />
+                {t("access.agree")}
               </p>
             </div>
-          ) : (
-            <form
-              onSubmit={submit}
-              className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 p-3 sm:flex-row"
-            >
-              <input
-                type="text"
-                value={company}
-                onChange={(e) => setCompany(e.target.value)}
-                className="hidden"
-                tabIndex={-1}
-                autoComplete="off"
-                aria-hidden="true"
-              />
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={t("access.ph")}
-                className="w-full flex-1 rounded-xl border border-white/10 bg-canvas px-5 py-3.5 text-[14px] font-medium text-ink placeholder:text-slate focus:border-accent focus:outline-none"
-              />
-              <button
-                type="submit"
-                disabled={status.state === "loading"}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-accent px-6 py-3.5 text-[14px] font-semibold text-white shadow-micro transition-all duration-300 ease-out hover:shadow-lift hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
-              >
-                {status.state === "loading" ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2.25} />
-                    {t("access.submitting")}
-                  </>
-                ) : (
-                  <>
-                    {t("requestAccess")}
-                    <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
-                  </>
-                )}
-              </button>
-            </form>
-          )}
-
-          {status.state === "error" && (
-            <div className="mx-auto mt-4 flex max-w-xl items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-[13px] font-medium text-white/80 animate-fade-in">
-              <AlertCircle className="h-4 w-4 shrink-0 text-red-400" strokeWidth={2.25} />
-              {status.message}
-            </div>
-          )}
-
-          <p className="mt-4 flex items-center justify-center gap-1.5 text-[11px] font-medium text-white/60">
-            <Lock className="h-3.5 w-3.5" strokeWidth={2} />
-            {t("access.encrypt")}
-          </p>
-          <div className="mt-6 flex items-center justify-center gap-3 text-[12px] font-medium text-white/60">
-            <ShieldCheck className="h-4 w-4" strokeWidth={2} />
-            {t("access.agree")}
           </div>
-        </Reveal>
+
+          <div className="lg:col-span-7">
+            <Reveal delay={0.1}>
+              {status.state === "success" ? (
+                <div className="rounded-md border border-slate-800 bg-canvas p-8 animate-modal-in">
+                  <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-md bg-accent">
+                    <Check className="h-6 w-6 text-white" strokeWidth={2.5} />
+                  </span>
+                  <h3 className="mt-4 text-xl font-semibold tracking-tight text-ink">
+                    {t("access.success")}
+                  </h3>
+                  <p className="mt-2 text-[14px] leading-relaxed text-slate">
+                    {t("access.successBody", { email })}
+                  </p>
+                </div>
+              ) : (
+                <form
+                  onSubmit={submit}
+                  className="relative flex flex-col gap-3 rounded-md border border-slate-800 bg-canvas p-5"
+                >
+                  {/* Honeypot: visually hidden, excluded from keyboard navigation.
+                      Real users never fill this; bots that do are silently rejected
+                      server-side. Do not remove — the server treats a populated
+                      `fax` field as an automated submission. */}
+                  <div
+                    aria-hidden="true"
+                    className="absolute -left-[9999px] -top-[9999px] h-px w-px overflow-hidden"
+                  >
+                    <label htmlFor="access-fax" className="sr-only">
+                      Leave this field blank
+                    </label>
+                    <input
+                      id="access-fax"
+                      name="fax"
+                      type="text"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      value={fax}
+                      onChange={(e) => setFax(e.target.value)}
+                      maxLength={120}
+                    />
+                  </div>
+
+                  <label htmlFor="access-email" className="sr-only">
+                    {t("access.ph")}
+                  </label>
+                  <input
+                    id="access-email"
+                    type="email"
+                    required
+                    maxLength={254}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder={t("access.ph")}
+                    className="w-full rounded-md border border-slate-800 bg-canvas px-5 py-3.5 text-[14px] font-medium tracking-tight text-ink placeholder:text-slate focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-canvas"
+                  />
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label htmlFor="access-company" className="sr-only">
+                      {t("access.company")}
+                    </label>
+                    <input
+                      id="access-company"
+                      type="text"
+                      maxLength={120}
+                      value={company}
+                      onChange={(e) => setCompany(e.target.value)}
+                      placeholder={t("access.company")}
+                      className="w-full rounded-md border border-slate-800 bg-canvas px-5 py-3.5 text-[14px] font-medium tracking-tight text-ink placeholder:text-slate focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-canvas"
+                    />
+                    <label htmlFor="access-volume" className="sr-only">
+                      {t("access.monthlyVolume")}
+                    </label>
+                    <select
+                      id="access-volume"
+                      value={volume}
+                      onChange={(e) => setVolume(e.target.value)}
+                      className="w-full appearance-none rounded-md border border-slate-800 bg-canvas px-5 py-3.5 text-[14px] font-medium tracking-tight text-ink focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-canvas"
+                    >
+                      <option value="" disabled>
+                        {t("access.volumePh")}
+                      </option>
+                      {volumeOptions.slice(1).map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div
+                    className={`rounded-md border p-3.5 transition-colors duration-300 ease-out ${
+                      consentError ? "border-red-400/60 bg-red-500/10" : "border-slate-800 bg-mist/40"
+                    }`}
+                  >
+                    <label className="flex cursor-pointer items-start gap-3">
+                      <input
+                        type="checkbox"
+                        checked={consent}
+                        onChange={(e) => {
+                          setConsent(e.target.checked);
+                          if (e.target.checked) setConsentError(false);
+                        }}
+                        aria-invalid={consentError}
+                        className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-800 bg-canvas accent-[#d9ae4e] focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-canvas"
+                      />
+                      <span className="text-[12px] leading-relaxed text-slate">
+                        {renderConsent(t("access.consent"))}
+                      </span>
+                    </label>
+                    {consentError && (
+                      <p role="alert" className="mt-2 flex items-center gap-1.5 text-[12px] font-medium text-red-600 dark:text-red-400">
+                        <AlertCircle className="h-3.5 w-3.5 shrink-0" strokeWidth={2.25} />
+                        {t("access.consentReq")}
+                      </p>
+                    )}
+                  </div>
+
+                  <Magnetic className="inline-flex w-full" strength={0.2}>
+                    <button
+                      type="submit"
+                      disabled={status.state === "loading"}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-gradient-to-b from-accent to-accent-strong px-6 py-3.5 text-[14px] font-semibold tracking-tight text-white shadow-gold transition-all duration-300 ease-out hover:brightness-110 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                      {status.state === "loading" ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2.25} />
+                          {t("access.submitting")}
+                        </>
+                      ) : (
+                        <>
+                          {t("requestAccess")}
+                          <ArrowRight className="h-4 w-4 rtl:rotate-180" strokeWidth={2.25} />
+                        </>
+                      )}
+                    </button>
+                  </Magnetic>
+                </form>
+              )}
+            </Reveal>
+
+            {status.state === "error" && (
+              <div className="mt-4 flex items-center justify-center gap-2 rounded-md border border-slate-800 bg-mist/40 px-4 py-3 text-[13px] font-medium text-ink animate-fade-in">
+                <AlertCircle className="h-4 w-4 shrink-0 text-red-500" strokeWidth={2.25} />
+                {status.message}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </section>
   );

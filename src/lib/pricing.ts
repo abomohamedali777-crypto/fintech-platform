@@ -41,3 +41,44 @@ export function savingsPercentage(monthlyVolume: number): number {
 export function avgTransactionSize(monthlyVolume: number): number {
   return monthlyVolume / MONTHLY_TRANSACTIONS;
 }
+
+export const OPS_HOURS_PER_MONTH = 60;
+export const OPS_HOURLY_COST = 85;
+export const FX_SPREAD_RATE = 0.002;
+export const PLATFORM_FX_RATE = 0.0006;
+export const FLOAT_DAYS_SAVED = 1.5;
+export const FLOAT_YIELD_RATE = 0.038;
+
+export function opsMonthlyCost(): number {
+  return OPS_HOURS_PER_MONTH * OPS_HOURLY_COST;
+}
+
+export function fxMonthlyCost(monthlyVolume: number, fxExposurePct = 0.4): number {
+  return monthlyVolume * fxExposurePct * FX_SPREAD_RATE;
+}
+
+export function platformFxMonthlyCost(monthlyVolume: number, fxExposurePct = 0.4): number {
+  return monthlyVolume * fxExposurePct * PLATFORM_FX_RATE;
+}
+
+export function legacyMonthlyCost(monthlyVolume: number, fxExposurePct = 0.4): number {
+  return bankMonthlyCost(monthlyVolume) + opsMonthlyCost() + fxMonthlyCost(monthlyVolume, fxExposurePct);
+}
+
+export function mizanMonthlyCost(monthlyVolume: number, fxExposurePct = 0.4): number {
+  return platformMonthlyCost(monthlyVolume) + platformFxMonthlyCost(monthlyVolume, fxExposurePct);
+}
+
+export function costImpactAnnual(monthlyVolume: number, fxExposurePct = 0.4): number {
+  return (legacyMonthlyCost(monthlyVolume, fxExposurePct) - mizanMonthlyCost(monthlyVolume, fxExposurePct)) * 12;
+}
+
+export function costImpactPct(monthlyVolume: number, fxExposurePct = 0.4): number {
+  const legacy = legacyMonthlyCost(monthlyVolume, fxExposurePct);
+  if (legacy <= 0) return 0;
+  return ((legacy - mizanMonthlyCost(monthlyVolume, fxExposurePct)) / legacy) * 100;
+}
+
+export function floatBenefitMonthly(monthlyVolume: number): number {
+  return (monthlyVolume / 30) * FLOAT_DAYS_SAVED * (FLOAT_YIELD_RATE / 12);
+}

@@ -23,9 +23,16 @@ export default function LegalModal({
   );
   const panelRef = useRef<HTMLDivElement>(null);
 
+  const [lastOpen, setLastOpen] = useState({ open, initialTab });
+  if (open !== lastOpen.open || initialTab !== lastOpen.initialTab) {
+    setLastOpen({ open, initialTab });
+    if (open) {
+      setTab(initialTab);
+    }
+  }
+
   useEffect(() => {
     if (!open) return;
-    setTab(initialTab);
 
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -74,11 +81,11 @@ export default function LegalModal({
       />
 
       <div
-        className="relative flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-t-3xl bg-canvas shadow-lift animate-modal-in sm:rounded-3xl"
+        className="relative flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-t-md bg-canvas shadow-micro animate-modal-in sm:rounded-md"
       >
-        <div className="flex items-center justify-between border-b hairline px-8 py-5">
+        <div className="flex items-center justify-between border-b border-slate-800 px-8 py-5">
           <div>
-            <p className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-wider text-slate">
+            <p className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-tight text-slate">
               <Scale className="h-3.5 w-3.5 text-accent" strokeWidth={2.2} />
               {t("legalDoc")} · {t("legalUpdated")}
             </p>
@@ -88,14 +95,14 @@ export default function LegalModal({
           </div>
           <button
             onClick={onClose}
-            className="flex h-9 w-9 items-center justify-center rounded-full transition-colors duration-300 ease-out hover:bg-mist"
+            className="flex h-9 w-9 items-center justify-center rounded-md transition-colors duration-300 ease-out hover:bg-mist"
             aria-label={t("legalClose")}
           >
             <X className="h-5 w-5 text-slate" />
           </button>
         </div>
 
-        <div className="flex gap-1.5 border-b hairline bg-mist/40 px-8 py-3" role="tablist" aria-label={t("legalDoc")}>
+        <div className="flex gap-1.5 border-b border-slate-800 bg-mist/40 px-8 py-3" role="tablist" aria-label={t("legalDoc")}>
           {(["privacy", "terms"] as LegalTab[]).map((item) => (
             <button
               key={item}
@@ -103,10 +110,10 @@ export default function LegalModal({
               aria-selected={tab === item}
               aria-controls="legal-doc-panel"
               onClick={() => setTab(item)}
-              className={`rounded-full px-4 py-1.5 text-[12px] font-medium transition-all duration-300 ease-out ${
+              className={`rounded-md px-4 py-1.5 text-[12px] font-medium tracking-tight transition-all duration-300 ease-out ${
                 tab === item
                   ? "bg-accent text-white shadow-micro"
-                  : "bg-canvas border hairline text-slate hover:text-ink"
+                  : "bg-canvas border border-slate-800 text-slate hover:text-ink"
               }`}
             >
               {item === "privacy" ? t("privacyPolicy") : t("termsConditions")}
@@ -121,7 +128,7 @@ export default function LegalModal({
               return (
                 <section key={section.heading}>
                   <h4 className="flex items-center gap-2.5 text-[15px] font-semibold tracking-tight text-ink">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent/10">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-md bg-accent/10">
                       <Icon className="h-3.5 w-3.5 text-accent" strokeWidth={2} />
                     </span>
                     {section.heading}
@@ -139,11 +146,11 @@ export default function LegalModal({
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 border-t hairline bg-mist/40 px-8 py-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 border-t border-slate-800 bg-mist/40 px-8 py-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2 text-[12px] text-slate">
             <span
-              className={`flex h-5 w-5 items-center justify-center rounded-full transition-colors duration-300 ${
-                accepted === tab ? "bg-accent" : "border hairline bg-canvas"
+              className={`flex h-5 w-5 items-center justify-center rounded-md transition-colors duration-300 ${
+                accepted === tab ? "bg-accent" : "border border-slate-800 bg-canvas"
               }`}
             >
               {accepted === tab && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
@@ -153,13 +160,13 @@ export default function LegalModal({
           <div className="flex items-center gap-3">
             <button
               onClick={onClose}
-              className="rounded-full border hairline bg-canvas px-5 py-2.5 text-[13px] font-medium text-ink transition-all duration-300 ease-out hover:bg-mist"
+              className="rounded-md border border-slate-800 bg-canvas px-5 py-2.5 text-[13px] font-medium tracking-tight text-ink transition-all duration-300 ease-out hover:bg-mist"
             >
               {t("legalClose")}
             </button>
             <button
               onClick={acceptTab}
-              className="rounded-full bg-accent px-5 py-2.5 text-[13px] font-semibold text-white shadow-micro transition-all duration-300 ease-out hover:shadow-lift hover:brightness-110"
+              className="rounded-md bg-accent px-5 py-2.5 text-[13px] font-semibold tracking-tight text-white shadow-micro transition-all duration-300 ease-out hover:brightness-110"
             >
               {t("legalAccept")}
             </button>

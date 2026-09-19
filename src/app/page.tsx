@@ -3,10 +3,12 @@
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
+import Intelligence from "@/components/Intelligence";
+import Services from "@/components/Services";
 import BentoGrid from "@/components/BentoGrid";
 import Calculator from "@/components/Calculator";
 import Security from "@/components/Security";
-import Team from "@/components/Team";
+import FAQ from "@/components/FAQ";
 import RequestAccess from "@/components/RequestAccess";
 import Footer from "@/components/Footer";
 import LegalModal, { type LegalTab } from "@/components/LegalModal";
@@ -25,16 +27,18 @@ export default function Home() {
 
   return (
     <>
-      <Navbar onOpenLegal={openLegal} />
+      <Navbar />
       <main>
         <Hero />
+        <Intelligence />
+        <Services />
         <BentoGrid />
         <Calculator />
         <Security />
-        <Team />
-        <RequestAccess />
+        <FAQ />
+        <RequestAccess onOpenPrivacy={() => openLegal("privacy")} />
       </main>
-      <Footer onOpenLegal={openLegal} />
+      <Footer />
       <LegalModal open={legalOpen} initialTab={legalTab} onClose={closeLegal} />
       <CookieBanner onOpenPrivacy={() => openLegal("privacy")} onOpenTerms={() => openLegal("terms")} />
     </>

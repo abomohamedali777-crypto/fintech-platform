@@ -6,7 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useState,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 import {
@@ -63,34 +63,58 @@ function applyDoc(theme: Theme, lang: Lang) {
   root.dir = RTL_LANGS.has(lang) ? "rtl" : "ltr";
 }
 
+const listeners = new Set<() => void>();
+
+function notifySettings() {
+  for (const l of listeners) l();
+}
+
+function subscribeSettings(cb: () => void): () => void {
+  listeners.add(cb);
+  return () => {
+    listeners.delete(cb);
+  };
+}
+
+function readTheme(): Theme {
+  return readStored(THEME_KEY, ["light", "dark"], systemTheme()) as Theme;
+}
+
+function readLang(): Lang {
+  return readStored(LANG_KEY, LANGS, systemLang()) as Lang;
+}
+
+function persist(theme: Theme, lang: Lang) {
+  try {
+    localStorage.setItem(THEME_KEY, theme);
+    localStorage.setItem(LANG_KEY, lang);
+  } catch {
+    /* ignore */
+  }
+}
+
 export function SettingsProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("light");
-  const [lang, setLangState] = useState<Lang>("en");
-  const [ready, setReady] = useState(false);
+  const theme = useSyncExternalStore(
+    subscribeSettings,
+    readTheme,
+    (): Theme => "light",
+  );
+  const lang = useSyncExternalStore(subscribeSettings, readLang, (): Lang => "en");
 
   useEffect(() => {
-    setTheme(readStored(THEME_KEY, ["light", "dark"], systemTheme()) as Theme);
-    setLangState(readStored(LANG_KEY, LANGS, systemLang()) as Lang);
-    setReady(true);
+    applyDoc(theme, lang);
+    persist(theme, lang);
+  }, [theme, lang]);
+
+  const setLang = useCallback((next: Lang) => {
+    persist(readTheme(), next);
+    notifySettings();
   }, []);
 
-  useEffect(() => {
-    if (!ready) return;
-    applyDoc(theme, lang);
-    try {
-      localStorage.setItem(THEME_KEY, theme);
-      localStorage.setItem(LANG_KEY, lang);
-    } catch {
-      /* ignore */
-    }
-  }, [theme, lang, ready]);
-
-  const setLang = useCallback((next: Lang) => setLangState(next), []);
-
-  const toggleTheme = useCallback(
-    () => setTheme((t) => (t === "dark" ? "light" : "dark")),
-    [],
-  );
+  const toggleTheme = useCallback(() => {
+    persist(readTheme() === "dark" ? "light" : "dark", readLang());
+    notifySettings();
+  }, []);
 
   const t = useCallback(
     (key: TKey | ExtraKey, vars?: Record<string, string | number>) => {

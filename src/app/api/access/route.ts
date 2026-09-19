@@ -1,140 +1,90 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createHash } from "node:crypto";
+import { MAX_BODY_BYTES, accessConfig, configWarnings, enforceStrictProdGuard } from "@/lib/accessConfig";
+import { NO_STORE, handleAccessRequest, parseContentLength, type AccessDeps } from "@/lib/accessPipeline";
+import { persistAccessRequest, notifyAccessRequest } from "@/lib/accessService";
+import { isDbConfigured } from "@/lib/db";
+import { accessLog } from "@/lib/accessLogger";
 import { consumeRateLimit } from "@/lib/rateLimit";
-import {
-  isDatabaseConfigured,
-  persistAccessRequest,
-  notifyAccessRequest,
-} from "@/lib/accessService";
+import { readStreamBodyCapped } from "@/lib/readBody";
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-
-const IP_LIMIT = Number(process.env.RATE_LIMIT_IP_LIMIT ?? 5);
-const IP_WINDOW_MS = Number(process.env.RATE_LIMIT_IP_WINDOW_MS ?? 10 * 60 * 1000);
-const EMAIL_LIMIT = Number(process.env.RATE_LIMIT_EMAIL_LIMIT ?? 2);
-const EMAIL_WINDOW_MS = Number(process.env.RATE_LIMIT_EMAIL_WINDOW_MS ?? 60 * 60 * 1000);
-
-function clientIp(request: NextRequest): string {
-  const forwarded = request.headers.get("x-forwarded-for");
-  if (forwarded) return forwarded.split(",")[0]?.trim() || "unknown";
-  return request.headers.get("x-real-ip")?.trim() || "unknown";
+// Surface misconfiguration immediately — but never crash the build in tests.
+// With STRICT_PROD_GUARD=1 the warnings become a fatal error at import time
+// so misconfigured deploys fail fast instead of degrading silently.
+const warnings = configWarnings();
+if (process.env.NODE_ENV === "production") {
+  enforceStrictProdGuard(warnings);
+  for (const w of warnings) console.warn(w);
 }
 
-function rateLimited(retryAfterSeconds: number, message: string) {
-  return NextResponse.json(
-    { error: "rate_limited", message },
-    {
-      status: 429,
-      headers: { "Retry-After": String(retryAfterSeconds) },
-    },
-  );
-}
+const deps: AccessDeps = {
+  config: accessConfig(),
+  rateLimiter: consumeRateLimit,
+  isDbConfigured,
+  persist: persistAccessRequest,
+  notify: notifyAccessRequest,
+  log: accessLog,
+};
 
 export async function POST(request: NextRequest) {
-  const ip = clientIp(request);
-  const ipCheck = consumeRateLimit(`ip:${ip}`, {
-    limit: IP_LIMIT,
-    windowMs: IP_WINDOW_MS,
-  });
-
-  if (!ipCheck.allowed) {
-    return rateLimited(
-      ipCheck.retryAfterSeconds,
-      `Too many requests from this network. Retry in ${ipCheck.retryAfterSeconds}s.`,
-    );
-  }
-
-  let payload: unknown;
-  try {
-    payload = await request.json();
-  } catch {
+  // Reject malformed or oversized bodies from the Content-Length header before
+  // buffering the body into memory. The pipeline re-checks the header and the
+  // decoded body too, so this is defense-in-depth against unbounded memory use.
+  const contentLength = request.headers.get("content-length");
+  const length = parseContentLength(contentLength);
+  if (length.present && !length.ok) {
     return NextResponse.json(
-      { error: "invalid_json", message: "Request body must be valid JSON." },
-      { status: 400 },
+      { error: "invalid_content_length", message: "Content-Length header must be a non-negative integer." },
+      { status: 400, headers: NO_STORE },
     );
   }
-
-  const body = (payload ?? {}) as Record<string, unknown>;
-
-  if (typeof body.company === "string" && body.company.trim().length > 0) {
-    if (isDatabaseConfigured()) {
-      await persistAccessRequest({
-        email: "honeypot-caught",
-        ipHash: createHash("sha256")
-          .update(`${ip}:${process.env.ACCESS_IP_SALT ?? "mizan"}`)
-          .digest("hex"),
-        userAgent: request.headers.get("user-agent"),
-        honeypot: true,
-      });
-    }
+  if (length.present && length.bytes > MAX_BODY_BYTES) {
     return NextResponse.json(
-      { success: true, requestId: `HONEYPOT-${crypto.randomUUID()}` },
-      { status: 200 },
+      { error: "payload_too_large", message: "Request body is too large." },
+      { status: 413, headers: NO_STORE },
     );
   }
 
-  const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
-
-  if (!EMAIL_PATTERN.test(email)) {
+  // True stream read with a hard byte cap: even a chunked body (no or fake
+  // Content-Length) can never buffer more than MAX_BODY_BYTES into memory.
+  const { rawBody, oversized } = await readStreamBodyCapped(request.body, MAX_BODY_BYTES);
+  if (oversized) {
     return NextResponse.json(
-      { error: "invalid_email", message: "A valid enterprise email address is required." },
-      { status: 422 },
+      { error: "payload_too_large", message: "Request body is too large." },
+      { status: 413, headers: NO_STORE },
     );
   }
 
-  const emailCheck = consumeRateLimit(`email:${email}`, {
-    limit: EMAIL_LIMIT,
-    windowMs: EMAIL_WINDOW_MS,
-  });
-
-  if (!emailCheck.allowed) {
-    return rateLimited(
-      emailCheck.retryAfterSeconds,
-      `This address has already submitted a request. Retry in ${emailCheck.retryAfterSeconds}s.`,
-    );
-  }
-
-  const requestId = crypto.randomUUID();
-
-  if (!isDatabaseConfigured()) {
-    return NextResponse.json(
-      {
-        error: "not_configured",
-        message: "Persistence is not configured yet. The infrastructure team has been notified.",
-      },
-      { status: 503 },
-    );
-  }
-
-  const ipHash = createHash("sha256")
-    .update(`${ip}:${process.env.ACCESS_IP_SALT ?? "mizan"}`)
-    .digest("hex");
-
-  const stored = await persistAccessRequest({
-    email,
-    ipHash,
-    userAgent: request.headers.get("user-agent"),
-    honeypot: false,
-  });
-
-  if (!stored.persisted) {
-    return NextResponse.json(
-      { error: "storage_failed", message: "Unable to record the request. Please try again." },
-      { status: 500 },
-    );
-  }
-
-  await notifyAccessRequest(
-    { email, ipHash, userAgent: request.headers.get("user-agent"), honeypot: false },
-    requestId,
-  );
-
-  return NextResponse.json(
-    {
-      success: true,
-      requestId,
-      message: "Request received. A treasury engineer will respond within one business day.",
+  const input = {
+    method: "POST",
+    origin: request.headers.get("origin"),
+    referer: request.headers.get("referer"),
+    contentType: request.headers.get("content-type"),
+    contentLength,
+    ipHeaders: {
+      "x-forwarded-for": request.headers.get("x-forwarded-for"),
+      "x-real-ip": request.headers.get("x-real-ip"),
     },
-    { status: 200 },
-  );
+    userAgent: request.headers.get("user-agent"),
+    rawBody,
+  };
+
+  const result = await handleAccessRequest(input, deps);
+  return NextResponse.json(result.body, {
+    status: result.status,
+    headers: result.headers,
+  });
+}
+
+export function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      // The endpoint is same-origin only; a restrictive allowlist is correct.
+      "Access-Control-Allow-Origin": "",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Max-Age": "600",
+      "Cache-Control": "no-store",
+    },
+  });
 }

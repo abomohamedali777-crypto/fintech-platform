@@ -3,11 +3,12 @@ import {
   Lock,
   ShieldCheck,
   KeyRound,
-  Landmark,
-  Globe2,
-  Gavel,
-  Scale,
   FileCheck,
+  Cookie,
+  Globe2,
+  Scale,
+  Gavel,
+  RefreshCcw,
 } from "lucide-react";
 
 export type LegalSection = {
@@ -16,114 +17,139 @@ export type LegalSection = {
   paragraphs: string[];
 };
 
+export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "support@mizan.pay";
+
 export const privacyPolicy: LegalSection[] = [
   {
-    heading: "1. Overview & Data Controller",
+    heading: "1. What This Policy Covers",
     icon: Fingerprint,
     paragraphs: [
-      "This Privacy Policy governs the processing of personal and corporate data collected through our B2B FinTech software infrastructure. We act as a data processor for institutional clients and a data controller for direct account management data.",
+      "This is the design demonstration website for Mizan, a planned B2B payments-infrastructure product. This policy describes how this site handles the small amount of information it collects today.",
     ],
   },
   {
     heading: "2. Information We Collect",
     icon: FileCheck,
     paragraphs: [
-      "Corporate Identity Data: Business registration details, corporate structure, ultimate beneficial owner (UBO) information, tax identification numbers.",
-      "Contact & Account Data: Names, business email addresses, phone numbers, and API authentication credentials of authorized personnel.",
-      "Transactional & System Telemetry: API request/response logs, transaction volumes, IP addresses, network routing data, and system performance metrics.",
+      "The only personal data this site collects is what you submit through the 'Request Access' form: your business email address, and optionally a company name and monthly transaction volume.",
+      "For abuse protection we also store a salted hash of your IP address and your browser's user-agent string. The raw IP address is never stored.",
     ],
   },
   {
-    heading: "3. Legal Basis & Purpose of Processing",
-    icon: Gavel,
-    paragraphs: [
-      "We process collected data under strict legal grounds:",
-      "Regulatory Compliance: Meeting Anti-Money Laundering (AML), Counter-Financing of Terrorism (CFT), and Know Your Customer (KYC) obligations.",
-      "Contractual Performance: Delivering automated liquidity, routing API calls, and enforcing security protocols.",
-      "Fraud Prevention & Security: Monitoring unauthorized access, detecting anomaly patterns, and protecting enterprise infrastructure.",
-    ],
-  },
-  {
-    heading: "4. Data Protection & Encryption Standards",
+    heading: "3. How That Data Is Processed",
     icon: Lock,
     paragraphs: [
-      "All data in transit is encrypted using TLS 1.3 standards. Data at rest is secured via AES-256 enterprise encryption. Hardware security modules (HSM) manage cryptographic key storage, engineered in alignment with the control requirements of ISO/IEC 27001 and SOC 2 Type II.",
+      "Email addresses are stored and transmitted in TLS-encrypted traffic. The email address is kept so a human can follow up on your request; it is never sold or shared with third parties.",
+      "A honeypot field silently discards automated submissions; submissions that trip it are not recorded.",
     ],
   },
   {
-    heading: "5. Data Sharing & Third Parties",
-    icon: Landmark,
-    paragraphs: [
-      "We do not sell, rent, or trade financial or operational data. Data is shared exclusively with:",
-      "Tier-1 Banking Partners & Licensed Custodians required to complete requested fiat transactions.",
-      "Cloud Infrastructure Providers under strict Data Processing Agreements (DPAs).",
-      "Regulatory Authorities when compelled by valid legal subpoenas or statutory mandates.",
-    ],
-  },
-  {
-    heading: "6. International Data Transfers & User Rights",
+    heading: "4. Retention & Your Rights",
     icon: Globe2,
     paragraphs: [
-      "Transfers of data across borders comply with international mechanisms (GDPR Standard Contractual Clauses and regional data protection frameworks). Enterprise users retain the right to inspect, audit, correct, or request deletion of account operator data by contacting security@enterprise.com.",
+      "Request records are retained only for as long as they are needed to evaluate your inquiry, and are deleted on request.",
+      "To request access, correction, or deletion of your data, email security@mizan.pay.",
+    ],
+  },
+  {
+    heading: "5. No Financial Services",
+    icon: Scale,
+    paragraphs: [
+      "This site is a design demonstration. It does not collect payments, hold deposits, process transactions, or provide financial services of any kind.",
     ],
   },
 ];
 
 export const termsAndConditions: LegalSection[] = [
   {
-    heading: "1. Agreement & Acceptance",
+    heading: "1. Demonstration Status",
     icon: FileCheck,
     paragraphs: [
-      "By executing an API integration or accessing this web application, you acknowledge that you represent a validly incorporated business entity and agree to be bound by these Terms and Conditions.",
+      "This website is a design demonstration for a planned B2B payments-infrastructure product. No paid service is currently offered and no agreement to provide services is formed by browsing this site or submitting the request form.",
     ],
   },
   {
-    heading: "2. Scope of Service & Disclaimer",
-    icon: Scale,
-    paragraphs: [
-      "Our platform provides API software and technical infrastructure for B2B financial orchestration. Unless explicitly licensed in specific jurisdictions, we act as a technology service provider and do not directly hold un-segregated retail consumer deposits.",
-    ],
-  },
-  {
-    heading: "3. Account Integrity & API Key Security",
-    icon: KeyRound,
-    paragraphs: [
-      "Enterprise clients are solely responsible for maintaining the confidentiality of API credentials, client secrets, and access tokens.",
-      "Any automated transaction or programmatic request initiated using valid API keys is legally attributed to the account holder.",
-    ],
-  },
-  {
-    heading: "4. Acceptable Use Policy",
+    heading: "2. Use of the Website",
     icon: ShieldCheck,
     paragraphs: [
-      "Users strictly agree NOT to:",
-      "Utilize the infrastructure for illicit trade, sanction evasion, or illegal money laundering operations.",
-      "Attempt reverse-engineering, vulnerability exploitation, or unauthorized penetration testing against platform endpoints without written consent.",
-      "Exceed agreed-upon rate limits or flood system infrastructure with malicious automated traffic.",
+      "You may browse the site and submit a non-binding request to be contacted about the product. You agree not to use automated tools to abuse, scrape, or overload the site.",
     ],
   },
   {
-    heading: "5. Limitation of Liability & Indemnification",
-    icon: Gavel,
-    paragraphs: [
-      "To the maximum extent permitted by governing law:",
-      "In no event shall the company be liable for indirect, incidental, special, or consequential damages, including operational downtime, lost profits, or financial market slippage.",
-      "Maximum aggregate liability arising from system failure shall not exceed the total platform fees paid by the client in the preceding 3-month period.",
-    ],
-  },
-  {
-    heading: "6. Service Level Agreement (SLA) & Termination",
-    icon: Globe2,
-    paragraphs: [
-      "System uptime targets (99.99%) are monitored in real time. We reserve the right to immediately suspend API access, revoke credentials, or freeze integration pipelines in cases of suspected security breaches, fraud, or material breach of these Terms.",
-    ],
-  },
-  {
-    heading: "7. Governing Law & Jurisdiction",
+    heading: "3. No Warranty",
     icon: Scale,
     paragraphs: [
-      "These Terms shall be governed by and interpreted in accordance with the laws of the United Arab Emirates, applied in the Emirate of Dubai.",
-      "Any dispute arising out of or in connection with these Terms shall be finally settled by arbitration conducted in accordance with the rules of the Dubai International Arbitration Centre (DIAC) in force at the time of the dispute. The seat of arbitration shall be the Dubai International Financial Centre, Dubai, United Arab Emirates, and the language of the proceedings shall be English.",
+      "All functionality, metrics, certifications, and team information shown on this site are illustrative and provided 'as is', without any representation or warranty.",
+    ],
+  },
+  {
+    heading: "4. Limitation of Liability",
+    icon: Gavel,
+    paragraphs: [
+      "To the maximum extent permitted by law, the operator of this demonstration site shall not be liable for any damages arising from its use.",
+    ],
+  },
+];
+
+export const cookiePolicy: LegalSection[] = [
+  {
+    heading: "1. Storage This Site Uses",
+    icon: Cookie,
+    paragraphs: [
+      "This site stores small amounts of information in your browser's localStorage (not tracking cookies). This covers your theme preference, language preference, and your consent choice for optional resources.",
+    ],
+  },
+  {
+    heading: "2. Essential Preferences",
+    icon: ShieldCheck,
+    paragraphs: [
+      "Theme (light/dark), language, and consent settings are kept in localStorage so the site renders consistently on your next visit. These are always stored and do not require consent.",
+    ],
+  },
+  {
+    heading: "3. Optional Resources",
+    icon: FileCheck,
+    paragraphs: [
+      "Brand fonts are loaded from Google Fonts only if you accept. No analytics, advertising, or tracking cookies are ever set.",
+      "You control this via the cookie banner (Accept All, Reject Non-Essential, or Preferences). Your choice is stored locally and can be changed at any time.",
+    ],
+  },
+  {
+    heading: "4. Contact",
+    icon: Lock,
+    paragraphs: [
+      `Questions about this site's cookie and storage practices can be directed to ${CONTACT_EMAIL}.`,
+    ],
+  },
+];
+
+export const refundPolicy: LegalSection[] = [
+  {
+    heading: "1. Payment Status",
+    icon: RefreshCcw,
+    paragraphs: [
+      "This site does not collect payments, subscriptions, or fees. There is therefore nothing to refund.",
+    ],
+  },
+  {
+    heading: "2. Future Products",
+    icon: FileCheck,
+    paragraphs: [
+      "When Mizan product pricing and payments are launched, a refund policy will be published here in advance of any charge being collected.",
+    ],
+  },
+  {
+    heading: "3. Questions",
+    icon: KeyRound,
+    paragraphs: [
+      `Questions about this page can be directed to ${CONTACT_EMAIL}.`,
+    ],
+  },
+  {
+    heading: "4. Governing Law",
+    icon: Gavel,
+    paragraphs: [
+      "These placeholder terms are for the design demonstration only and do not create a contractual relationship.",
     ],
   },
 ];

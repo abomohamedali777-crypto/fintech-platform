@@ -12,7 +12,7 @@ export function ThemeToggle() {
     <button
       onClick={toggleTheme}
       aria-label={t("themeToggle")}
-      className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate transition-colors duration-300 ease-out hover:bg-mist hover:text-ink"
+      className="inline-flex h-9 w-9 items-center justify-center rounded-md text-slate transition-all duration-300 ease-out hover:bg-mist hover:text-ink hover:shadow-[0_2px_10px_rgba(161,98,7,0.12)]"
     >
       {isDark ? (
         <Sun className="h-[18px] w-[18px]" strokeWidth={1.9} />
@@ -33,7 +33,7 @@ export function LangPicker() {
         onClick={() => setOpen((o) => !o)}
         aria-label={t("langSelect")}
         aria-expanded={open}
-        className="inline-flex h-9 items-center gap-1.5 rounded-lg px-2.5 text-[12px] font-semibold uppercase tracking-wide text-slate transition-colors duration-300 ease-out hover:bg-mist hover:text-ink"
+        className="inline-flex h-9 items-center gap-1.5 rounded-md px-2.5 text-[12px] font-semibold uppercase tracking-tight text-slate transition-all duration-300 ease-out hover:bg-mist hover:text-ink"
       >
         <Languages className="h-4 w-4" strokeWidth={1.9} />
         {lang}
@@ -46,8 +46,8 @@ export function LangPicker() {
             onClick={() => setOpen(false)}
             aria-hidden="true"
           />
-          <div className="absolute end-0 top-full z-50 mt-2 w-60 overflow-hidden rounded-2xl border hairline bg-canvas shadow-lift animate-fade-in">
-            <p className="border-b hairline px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-slate">
+          <div className="absolute end-0 top-full z-50 mt-2 w-60 overflow-hidden rounded-md border border-slate-800 bg-canvas shadow-micro animate-fade-in">
+            <p className="border-b border-slate-800 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-tight text-slate">
               {t("langSelect")}
             </p>
             <ul className="max-h-80 overflow-y-auto py-1.5">
