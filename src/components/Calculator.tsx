@@ -11,6 +11,8 @@ import {
   savingsPercentage,
   avgTransactionSize,
 } from "@/lib/pricing";
+import { useSettings } from "@/lib/site";
+import Reveal from "@/components/Reveal";
 
 const sliderMin = 1000;
 const sliderMax = 50000;
@@ -25,6 +27,7 @@ function fmtUSD(n: number) {
 }
 
 export default function Calculator() {
+  const { t } = useSettings();
   const [monthlyVolume, setMonthlyVolume] = useState(12000000);
 
   const tier = volumeTier(monthlyVolume);
@@ -37,28 +40,30 @@ export default function Calculator() {
     <section id="infrastructure" className="scroll-mt-20 bg-mist py-24">
       <div className="mx-auto max-w-6xl px-6">
         <div className="mx-auto max-w-2xl text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border hairline bg-white px-4 py-1.5 text-[12px] font-medium text-slate shadow-micro">
-            <CalculatorIcon className="h-3.5 w-3.5 text-accent" strokeWidth={2} />
-            Cost Impact Calculator
-          </span>
-          <h2 className="mt-6 text-3xl font-semibold tracking-tight text-ink sm:text-4xl md:text-5xl">
-            Quantify total cost of settlement
-          </h2>
-          <p className="mt-4 text-base leading-relaxed text-slate">
-            Move the slider to model monthly transaction volume. Estimates
-            compare legacy correspondent-banking fees against programmatic
-            liquidity infrastructure.
-          </p>
+          <Reveal>
+            <span className="inline-flex items-center gap-2 rounded-full border hairline bg-canvas px-4 py-1.5 text-[12px] font-medium text-slate shadow-micro">
+              <CalculatorIcon className="h-3.5 w-3.5 text-accent" strokeWidth={2} />
+              {t("calc.badge")}
+            </span>
+          </Reveal>
+          <Reveal delay={0.08}>
+            <h2 className="mt-6 text-3xl font-semibold tracking-tight text-ink sm:text-4xl md:text-5xl">
+              {t("calc.title")}
+            </h2>
+          </Reveal>
+          <Reveal delay={0.16}>
+            <p className="mt-4 text-base leading-relaxed text-slate">
+              {t("calc.sub")}
+            </p>
+          </Reveal>
         </div>
 
-        <div className="mx-auto mt-14 max-w-4xl overflow-hidden rounded-2xl border hairline bg-white shadow-lift">
+        <Reveal delay={0.12}>
+        <div className="mx-auto mt-14 max-w-4xl overflow-hidden rounded-2xl border hairline bg-canvas shadow-lift">
           <div className="grid gap-0 md:grid-cols-2">
             <div className="border-b hairline p-8 md:border-b-0 md:border-r">
-              <label
-                htmlFor="volume"
-                className="text-[13px] font-medium text-ink"
-              >
-                Monthly transaction volume
+              <label htmlFor="volume" className="text-[13px] font-medium text-ink">
+                {t("calc.vol")}
               </label>
               <p className="mt-1 text-3xl font-semibold tracking-tight text-ink">
                 {fmtUSD(monthlyVolume)}
@@ -82,7 +87,7 @@ export default function Calculator() {
               <div className="mt-8 space-y-3">
                 <div className="flex items-center justify-between rounded-xl bg-mist px-4 py-3">
                   <span className="text-[13px] text-slate">
-                    Avg. transaction size
+                    {t("calc.avg")}
                   </span>
                   <span className="text-[13px] font-semibold text-ink">
                     {fmtUSD(avgTransactionSize(monthlyVolume))}
@@ -90,10 +95,10 @@ export default function Calculator() {
                 </div>
                 <div className="flex items-center justify-between rounded-xl bg-mist px-4 py-3">
                   <span className="text-[13px] text-slate">
-                    Estimated volume tier
+                    {t("calc.tier")}
                   </span>
                   <span className="text-[13px] font-semibold text-ink">
-                    Tier {tier}
+                    {t("calc.tierValue", { tier })}
                   </span>
                 </div>
               </div>
@@ -101,13 +106,13 @@ export default function Calculator() {
 
             <div className="flex flex-col p-8">
               <p className="text-[13px] font-medium text-ink">
-                Projected monthly settlement costs
+                {t("calc.projected")}
               </p>
 
               <div className="mt-5 space-y-4">
                 <div className="flex items-end justify-between">
                   <span className="text-[12px] text-slate">
-                    Traditional banking fees
+                    {t("calc.bank")}
                   </span>
                   <span className="text-[13px] font-semibold text-ink tabular-nums">
                     {fmtUSD(bankPrice)}
@@ -122,7 +127,7 @@ export default function Calculator() {
 
                 <div className="flex items-end justify-between">
                   <span className="text-[12px] text-slate">
-                    Platform cost
+                    {t("calc.platform")}
                   </span>
                   <span className="text-[13px] font-semibold text-ink tabular-nums">
                     {fmtUSD(platformPrice)}
@@ -136,29 +141,30 @@ export default function Calculator() {
                 </div>
               </div>
 
-              <div className="mt-6 rounded-2xl bg-ink p-5 text-white">
+              <div className="mt-6 rounded-2xl bg-panel p-5 text-white">
                 <p className="flex items-center gap-2 text-[12px] font-medium text-white/60">
                   <TrendingDown className="h-4 w-4" strokeWidth={2} />
-                  Estimated annual savings
+                  {t("calc.savings")}
                 </p>
                 <p className="mt-1 text-[28px] font-semibold tracking-tight tabular-nums">
                   {fmtUSD(estAnnualSavings)}
                 </p>
                 <p className="mt-2 text-[13px] text-white/60">
-                  {savingsPct.toFixed(1)}% lower total cost vs. legacy rails
+                  {t("calc.savingsPct", { pct: savingsPct.toFixed(1) })}
                 </p>
                 <div className="mt-4 flex items-center gap-2">
                   <button className="rounded-full bg-accent px-4 py-2 text-[12px] font-semibold text-white transition-all duration-300 ease-out hover:brightness-110">
-                    Get exact pricing
+                    {t("calc.pricing")}
                   </button>
                   <span className="text-[11px] text-white/60">
-                    No commitment required
+                    {t("calc.noCommit")}
                   </span>
                 </div>
               </div>
             </div>
           </div>
         </div>
+        </Reveal>
       </div>
     </section>
   );

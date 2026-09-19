@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  darkMode: "class",
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -9,18 +10,19 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#1D1D1F",
-        canvas: "#FFFFFF",
-        mist: "#F5F5F7",
-        slate: "#6E6E73",
-        accent: "#0066CC",
+        ink: "rgb(var(--ink) / <alpha-value>)",
+        canvas: "rgb(var(--canvas) / <alpha-value>)",
+        mist: "rgb(var(--mist) / <alpha-value>)",
+        slate: "rgb(var(--slate) / <alpha-value>)",
+        accent: "rgb(var(--accent) / <alpha-value>)",
+        panel: "rgb(var(--panel) / <alpha-value>)",
       },
       fontFamily: {
-        sans: ["Inter", "SF Pro Display", "SF Pro Text", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
+        sans: ["Inter", "SF Pro Display", "SF Pro Text", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Noto Sans", "Noto Sans Arabic", "Noto Sans CJK SC", "Roboto", "sans-serif"],
       },
       boxShadow: {
-        micro: "0 2px 8px rgba(0, 0, 0, 0.04)",
-        lift: "0 8px 32px rgba(0, 0, 0, 0.08)",
+        micro: "var(--shadow-micro)",
+        lift: "var(--shadow-lift)",
       },
     },
   },

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { X, Scale, Check } from "lucide-react";
 import { privacyPolicy, termsAndConditions } from "@/data/legal";
+import { useSettings } from "@/lib/site";
 
 export type LegalTab = "privacy" | "terms";
 
@@ -15,6 +16,7 @@ export default function LegalModal({
   initialTab: LegalTab;
   onClose: () => void;
 }) {
+  const { t } = useSettings();
   const [tab, setTab] = useState<LegalTab>(initialTab);
   const [accepted, setAccepted] = useState<"privacy" | "terms" | null>(
     () => (typeof window !== "undefined" ? (localStorage.getItem("legal-accepted") as LegalTab | null) : null),
@@ -72,47 +74,47 @@ export default function LegalModal({
       />
 
       <div
-        className="relative flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-t-3xl bg-white shadow-lift animate-modal-in sm:rounded-3xl"
+        className="relative flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-t-3xl bg-canvas shadow-lift animate-modal-in sm:rounded-3xl"
       >
         <div className="flex items-center justify-between border-b hairline px-8 py-5">
           <div>
             <p className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-wider text-slate">
               <Scale className="h-3.5 w-3.5 text-accent" strokeWidth={2.2} />
-              Legal Documentation · Updated September 2026
+              {t("legalDoc")} · {t("legalUpdated")}
             </p>
             <h3 id="legal-modal-title" className="mt-1 text-xl font-semibold tracking-tight text-ink">
-              {tab === "privacy" ? "Privacy Policy" : "Terms and Conditions of Service"}
+              {tab === "privacy" ? t("privacyPolicy") : t("legalTermsTitle")}
             </h3>
           </div>
           <button
             onClick={onClose}
             className="flex h-9 w-9 items-center justify-center rounded-full transition-colors duration-300 ease-out hover:bg-mist"
-            aria-label="Close legal document"
+            aria-label={t("legalClose")}
           >
             <X className="h-5 w-5 text-slate" />
           </button>
         </div>
 
-        <div className="flex gap-1.5 border-b hairline bg-mist/40 px-8 py-3" role="tablist" aria-label="Legal documents">
-          {(["privacy", "terms"] as LegalTab[]).map((t) => (
+        <div className="flex gap-1.5 border-b hairline bg-mist/40 px-8 py-3" role="tablist" aria-label={t("legalDoc")}>
+          {(["privacy", "terms"] as LegalTab[]).map((item) => (
             <button
-              key={t}
+              key={item}
               role="tab"
-              aria-selected={tab === t}
+              aria-selected={tab === item}
               aria-controls="legal-doc-panel"
-              onClick={() => setTab(t)}
+              onClick={() => setTab(item)}
               className={`rounded-full px-4 py-1.5 text-[12px] font-medium transition-all duration-300 ease-out ${
-                tab === t
+                tab === item
                   ? "bg-accent text-white shadow-micro"
-                  : "bg-white border hairline text-slate hover:text-ink"
+                  : "bg-canvas border hairline text-slate hover:text-ink"
               }`}
             >
-              {t === "privacy" ? "Privacy Policy" : "Terms & Conditions"}
+              {item === "privacy" ? t("privacyPolicy") : t("termsConditions")}
             </button>
           ))}
         </div>
 
-        <div ref={panelRef} className="flex-1 overflow-y-auto px-8 py-7" role="tabpanel" aria-label={tab === "privacy" ? "Privacy Policy" : "Terms and Conditions"} tabIndex={-1}>
+        <div ref={panelRef} className="flex-1 overflow-y-auto px-8 py-7" role="tabpanel" aria-label={tab === "privacy" ? t("privacyPolicy") : t("legalTermsTitle")} tabIndex={-1}>
           <div key={tab} className="animate-fade-in space-y-7">
             {active.map((section) => {
               const Icon = section.icon;
@@ -141,27 +143,25 @@ export default function LegalModal({
           <div className="flex items-center gap-2 text-[12px] text-slate">
             <span
               className={`flex h-5 w-5 items-center justify-center rounded-full transition-colors duration-300 ${
-                accepted === tab ? "bg-accent" : "border hairline bg-white"
+                accepted === tab ? "bg-accent" : "border hairline bg-canvas"
               }`}
             >
               {accepted === tab && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
             </span>
-            {accepted === tab
-              ? "You have accepted this document."
-              : "Please review before continuing."}
+            {accepted === tab ? t("legalAccepted") : t("legalReview")}
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={onClose}
-              className="rounded-full border hairline bg-white px-5 py-2.5 text-[13px] font-medium text-ink transition-all duration-300 ease-out hover:bg-mist"
+              className="rounded-full border hairline bg-canvas px-5 py-2.5 text-[13px] font-medium text-ink transition-all duration-300 ease-out hover:bg-mist"
             >
-              Close
+              {t("legalClose")}
             </button>
             <button
               onClick={acceptTab}
               className="rounded-full bg-accent px-5 py-2.5 text-[13px] font-semibold text-white shadow-micro transition-all duration-300 ease-out hover:shadow-lift hover:brightness-110"
             >
-              Accept & Continue
+              {t("legalAccept")}
             </button>
           </div>
         </div>

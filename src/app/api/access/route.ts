@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
       await persistAccessRequest({
         email: "honeypot-caught",
         ipHash: createHash("sha256")
-          .update(`${ip}:${process.env.ACCESS_IP_SALT ?? "meridian"}`)
+          .update(`${ip}:${process.env.ACCESS_IP_SALT ?? "mizan"}`)
           .digest("hex"),
         userAgent: request.headers.get("user-agent"),
         honeypot: true,
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
   }
 
   const ipHash = createHash("sha256")
-    .update(`${ip}:${process.env.ACCESS_IP_SALT ?? "meridian"}`)
+    .update(`${ip}:${process.env.ACCESS_IP_SALT ?? "mizan"}`)
     .digest("hex");
 
   const stored = await persistAccessRequest({

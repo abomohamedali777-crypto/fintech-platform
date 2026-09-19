@@ -49,7 +49,7 @@ export async function notifyAccessRequest(
 
   const resend = new Resend(apiKey);
   await resend.emails.send({
-    from: process.env.NOTIFY_FROM ?? "Meridian Access <access@meridian.finance>",
+    from: process.env.NOTIFY_FROM ?? "Mizan Access <access@mizan.pay>",
     to: notifyTo,
     subject: "New production access request",
     text: [

@@ -1,63 +1,70 @@
 "use client";
 
-import { Github } from "lucide-react";
+import { Scale } from "lucide-react";
+import { useSettings } from "@/lib/site";
+import type { TKey, ExtraKey } from "@/data/translations";
 
 export default function Footer({
   onOpenLegal,
 }: {
   onOpenLegal: (tab: "privacy" | "terms") => void;
 }) {
+  const { t } = useSettings();
+
   const scrollToId = (selector: string) => {
     document.querySelector(selector)?.scrollIntoView({ behavior: "smooth" });
   };
 
   const columns: {
-    label: string;
-    items: { label: string; href?: string; action?: () => void }[];
+    labelKey: "footer.platform" | "footer.company" | "footer.legal";
+    items: {
+      labelKey: TKey | ExtraKey;
+      href?: string;
+      action?: () => void;
+    }[];
   }[] = [
     {
-      label: "Platform",
+      labelKey: "footer.platform",
       items: [
-        { label: "B2B Treasury", action: () => scrollToId("#product") },
-        { label: "Settlement Rails", action: () => scrollToId("#product") },
-        { label: "Automated GRC", action: () => scrollToId("#product") },
-        { label: "Cost Calculator", action: () => scrollToId("#infrastructure") },
+        { labelKey: "tab.1", action: () => scrollToId("#product") },
+        { labelKey: "linkRails", action: () => scrollToId("#product") },
+        { labelKey: "tab.3", action: () => scrollToId("#product") },
+        { labelKey: "linkCalc", action: () => scrollToId("#infrastructure") },
       ],
     },
     {
-      label: "Company",
+      labelKey: "footer.company",
       items: [
-        { label: "Security", action: () => scrollToId("#security") },
-        { label: "Request Access", action: () => scrollToId("#access") },
-        { label: "Status", action: () => scrollToId("#security") },
+        { labelKey: "nav.security", action: () => scrollToId("#security") },
+        { labelKey: "requestAccess", action: () => scrollToId("#access") },
+        { labelKey: "linkStatus", action: () => scrollToId("#security") },
       ],
     },
     {
-      label: "Legal",
+      labelKey: "footer.legal",
       items: [
-        { label: "Privacy Policy", href: "/privacy" },
-        { label: "Terms & Conditions", href: "/terms" },
-        { label: "SLA Overview", action: () => onOpenLegal("terms") },
+        { labelKey: "privacyPolicy", href: "/privacy" },
+        { labelKey: "termsConditions", href: "/terms" },
+        { labelKey: "linkSla", action: () => onOpenLegal("terms") },
       ],
     },
   ];
 
   return (
-    <footer className="border-t hairline bg-white pb-10 pt-16">
+    <footer className="border-t hairline bg-canvas pb-10 pt-16">
       <div className="mx-auto max-w-6xl px-6">
         <div className="grid gap-10 md:grid-cols-5">
           <div className="md:col-span-2">
             <div className="flex items-center gap-2.5">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-ink">
-                <Github className="h-4 w-4 text-white" strokeWidth={1.75} />
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-panel">
+                <Scale className="h-4 w-4 text-white" strokeWidth={1.75} />
               </span>
               <span className="text-[15px] font-semibold tracking-tight text-ink">
-                Meridian
+                Mizan
               </span>
             </div>
             <p className="mt-4 max-w-xs text-[13px] leading-relaxed text-slate">
-              Automated liquidity and settlement infrastructure for global B2B
-              enterprises.
+              {t("footer.tagline")}
             </p>
             <p className="mt-4 text-[11px] font-medium uppercase tracking-wider text-slate">
               UAE · Delaware, USA
@@ -65,26 +72,26 @@ export default function Footer({
           </div>
 
           {columns.map((col) => (
-            <div key={col.label}>
+            <div key={col.labelKey}>
               <p className="text-[11px] font-semibold uppercase tracking-wider text-slate">
-                {col.label}
+                {t(col.labelKey)}
               </p>
               <ul className="mt-4 space-y-2.5">
                 {col.items.map((item) => (
-                  <li key={item.label}>
+                  <li key={item.labelKey}>
                     {item.href ? (
                       <a
                         href={item.href}
                         className="text-[13px] font-medium text-slate transition-colors duration-300 ease-out hover:text-ink"
                       >
-                        {item.label}
+                        {t(item.labelKey)}
                       </a>
                     ) : (
                       <button
                         onClick={item.action}
                         className="text-[13px] font-medium text-slate transition-colors duration-300 ease-out hover:text-ink"
                       >
-                        {item.label}
+                        {t(item.labelKey)}
                       </button>
                     )}
                   </li>
@@ -96,18 +103,18 @@ export default function Footer({
 
         <div className="mt-14 flex flex-col items-start justify-between gap-4 border-t hairline pt-6 sm:flex-row sm:items-center">
           <p className="text-[12px] text-slate">
-            © 2026 Meridian Financial Infrastructure FZ-LLC. All rights reserved.
+            © 2026 Mizan Financial Infrastructure FZ-LLC. {t("footer.copyright")}
           </p>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[12px] font-medium text-slate">
             <button onClick={() => onOpenLegal("privacy")} className="transition-colors duration-300 ease-out hover:text-ink">
-              Privacy
+              {t("nav.privacy")}
             </button>
             <button onClick={() => onOpenLegal("terms")} className="transition-colors duration-300 ease-out hover:text-ink">
-              Terms
+              {t("nav.terms")}
             </button>
             <span className="inline-flex items-center gap-1.5">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              All systems operational
+              {t("footer.systems")}
             </span>
           </div>
         </div>

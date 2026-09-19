@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 import { Check, ArrowRight, ShieldCheck, Lock, Loader2, AlertCircle } from "lucide-react";
+import { useSettings } from "@/lib/site";
+import Reveal from "@/components/Reveal";
 
 export default function RequestAccess() {
+  const { t } = useSettings();
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState("");
   const [status, setStatus] = useState<
@@ -26,13 +29,13 @@ export default function RequestAccess() {
         const data = (await res.json().catch(() => null)) as { message?: string } | null;
         setStatus({
           state: "error",
-          message: data?.message ?? "Too many requests. Please try again later.",
+          message: data?.message ?? t("err.429"),
         });
         return;
       }
 
       if (res.status === 422) {
-        setStatus({ state: "error", message: "Please enter a valid enterprise email address." });
+        setStatus({ state: "error", message: t("err.422") });
         return;
       }
 
@@ -40,53 +43,61 @@ export default function RequestAccess() {
         const data = (await res.json().catch(() => null)) as { message?: string } | null;
         setStatus({
           state: "error",
-          message: data?.message ?? "Request failed. Please try again.",
+          message: data?.message ?? t("err.fail"),
         });
         return;
       }
 
       setStatus({ state: "success" });
     } catch {
-      setStatus({ state: "error", message: "Network error. Please check your connection and try again." });
+      setStatus({ state: "error", message: t("err.net") });
     }
   };
 
   return (
-    <section id="access" className="scroll-mt-20 bg-ink py-24">
-      <div className="mx-auto max-w-6xl px-6">
+    <section id="access" className="relative scroll-mt-20 overflow-hidden bg-panel py-24">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(ellipse_50%_100%_at_50%_0%,rgba(0,102,204,0.18),transparent)]" />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute right-[8%] top-16 h-56 w-56 rounded-full bg-accent/10 blur-3xl animate-float-delayed"
+      />
+      <div className="relative mx-auto max-w-6xl px-6">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl md:text-5xl">
-            Request production access
-          </h2>
-          <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-white/60">
-            Approved enterprises begin with a sandbox credential within hours.
-            Full production onboarding includes dedicated treasury engineers.
-          </p>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[12px] font-medium text-white/50">
-            <span className="inline-flex items-center gap-1.5">
-              <Check className="h-3.5 w-3.5 text-white/70" strokeWidth={2.5} />
-              Sandbox API key in under 24 hours
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Check className="h-3.5 w-3.5 text-white/70" strokeWidth={2.5} />
-              No setup fees
-            </span>
-          </div>
+          <Reveal>
+            <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl md:text-5xl">
+              {t("access.title")}
+            </h2>
+          </Reveal>
+          <Reveal delay={0.08}>
+            <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-white/60">
+              {t("access.sub")}
+            </p>
+          </Reveal>
+          <Reveal delay={0.16}>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[12px] font-medium text-white/50">
+              <span className="inline-flex items-center gap-1.5">
+                <Check className="h-3.5 w-3.5 text-white/70" strokeWidth={2.5} />
+                {t("access.check1")}
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <Check className="h-3.5 w-3.5 text-white/70" strokeWidth={2.5} />
+                {t("access.check2")}
+              </span>
+            </div>
+          </Reveal>
         </div>
 
-        <div className="mx-auto mt-10 max-w-xl">
+        <Reveal delay={0.12} className="mx-auto mt-10 max-w-xl">
           {status.state === "success" ? (
             <div className="rounded-2xl border border-white/10 bg-white/5 p-8 text-center animate-modal-in">
               <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-accent">
                 <Check className="h-6 w-6 text-white" strokeWidth={2.5} />
               </span>
               <h3 className="mt-4 text-xl font-semibold tracking-tight text-white">
-                Request received
+                {t("access.success")}
               </h3>
               <p className="mt-2 text-[14px] leading-relaxed text-white/60">
-                A treasury engineer will contact <span className="font-medium text-white">{email}</span>{" "}
-                within one business day to complete entitlement review and issue
-                sandbox credentials.
+                {t("access.successBody", { email })}
               </p>
             </div>
           ) : (
@@ -108,8 +119,8 @@ export default function RequestAccess() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enterprise email address"
-                className="w-full flex-1 rounded-xl border border-white/10 bg-white px-5 py-3.5 text-[14px] font-medium text-ink placeholder:text-slate focus:border-accent focus:outline-none"
+                placeholder={t("access.ph")}
+                className="w-full flex-1 rounded-xl border border-white/10 bg-canvas px-5 py-3.5 text-[14px] font-medium text-ink placeholder:text-slate focus:border-accent focus:outline-none"
               />
               <button
                 type="submit"
@@ -119,11 +130,11 @@ export default function RequestAccess() {
                 {status.state === "loading" ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2.25} />
-                    Submitting
+                    {t("access.submitting")}
                   </>
                 ) : (
                   <>
-                    Request Access
+                    {t("requestAccess")}
                     <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
                   </>
                 )}
@@ -140,13 +151,13 @@ export default function RequestAccess() {
 
           <p className="mt-4 flex items-center justify-center gap-1.5 text-[11px] font-medium text-white/60">
             <Lock className="h-3.5 w-3.5" strokeWidth={2} />
-            Transmission encrypted with TLS 1.3 · Reviewed under SOC 2 Type II controls
+            {t("access.encrypt")}
           </p>
           <div className="mt-6 flex items-center justify-center gap-3 text-[12px] font-medium text-white/60">
             <ShieldCheck className="h-4 w-4" strokeWidth={2} />
-            By submitting, you agree to our terms of service and privacy policy.
+            {t("access.agree")}
           </div>
-        </div>
+        </Reveal>
       </div>
     </section>
   );

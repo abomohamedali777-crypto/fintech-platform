@@ -6,6 +6,7 @@ import Hero from "@/components/Hero";
 import BentoGrid from "@/components/BentoGrid";
 import Calculator from "@/components/Calculator";
 import Security from "@/components/Security";
+import Team from "@/components/Team";
 import RequestAccess from "@/components/RequestAccess";
 import Footer from "@/components/Footer";
 import LegalModal, { type LegalTab } from "@/components/LegalModal";
@@ -30,6 +31,7 @@ export default function Home() {
         <BentoGrid />
         <Calculator />
         <Security />
+        <Team />
         <RequestAccess />
       </main>
       <Footer onOpenLegal={openLegal} />

@@ -9,6 +9,7 @@ import {
   Wallet,
   Layers,
 } from "lucide-react";
+import { useSettings } from "@/lib/site";
 
 const width = 640;
 const height = 150;
@@ -51,6 +52,7 @@ function fmtMoney(n: number) {
 }
 
 export default function Dashboard() {
+  const { t } = useSettings();
   const [points, setPoints] = useState(INITIAL_POINTS);
   const [volume, setVolume] = useState(24.8);
   const [recentTxns, setRecentTxns] = useState(1268);
@@ -75,68 +77,68 @@ export default function Dashboard() {
   const lastY = height - (points[points.length - 1] / 100) * height;
 
   return (
-    <div className="overflow-hidden rounded-2xl border hairline bg-white shadow-lift">
+    <div className="overflow-hidden rounded-2xl border hairline bg-canvas shadow-lift">
       <div className="flex items-center justify-between border-b hairline px-6 py-4">
         <div className="flex items-center gap-2">
           <span className="h-2.5 w-2.5 rounded-full bg-accent" style={{ animation: "fade-in 2s ease-in-out infinite" }} />
-          <span className="text-[13px] font-medium text-ink">Live Treasury Operations</span>
+          <span className="text-[13px] font-medium text-ink">{t("dash.live")}</span>
         </div>
         <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate">
           <span className="rounded-md bg-mist px-2 py-1">UTC 04:12</span>
-          <span className="hidden rounded-md bg-mist px-2 py-1 sm:inline-block">Settlement Rail: SWIFT / SEPA / FPS</span>
+          <span className="hidden rounded-md bg-mist px-2 py-1 sm:inline-block">{t("dash.rail")}</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-px bg-black/5 lg:grid-cols-4">
-        <div className="bg-white p-5">
+      <div className="grid grid-cols-2 gap-px bg-black/5 lg:grid-cols-4 dark:bg-white/10">
+        <div className="bg-canvas p-5">
           <p className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-slate">
             <Wallet className="h-3.5 w-3.5" strokeWidth={2} />
-            Settled Volume
+            {t("dash.volume")}
           </p>
           <p className="mt-2 text-xl font-semibold tracking-tight text-ink">
             {fmtMoney(volume * 1e6)}
           </p>
           <p className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-accent">
             <ArrowUpRight className="h-3 w-3" strokeWidth={2.5} />
-            +{((volume / 20 - 1) * 100).toFixed(2)}% vs prior period
+            +{((volume / 20 - 1) * 100).toFixed(2)}% {t("dash.vsPrior")}
           </p>
         </div>
 
-        <div className="bg-white p-5">
+        <div className="bg-canvas p-5">
           <p className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-slate">
             <Activity className="h-3.5 w-3.5" strokeWidth={2} />
-            Transactions
+            {t("dash.txns")}
           </p>
           <p className="mt-2 text-xl font-semibold tracking-tight text-ink">
             {recentTxns.toLocaleString()}
           </p>
           <p className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-accent">
             <ArrowDownRight className="h-3 w-3" strokeWidth={2.5} />
-            62 ops/sec rolling
+            62 {t("dash.opsSec")}
           </p>
         </div>
 
-        <div className="bg-white p-5">
+        <div className="bg-canvas p-5">
           <p className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-slate">
             <Timer className="h-3.5 w-3.5" strokeWidth={2} />
-            API Latency
+            {t("dash.latency")}
           </p>
           <p className="mt-2 text-xl font-semibold tracking-tight text-ink">{latency} ms</p>
           <p className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-accent">
             <ArrowDownRight className="h-3 w-3" strokeWidth={2.5} />
-            p95 across all regions
+            {t("dash.p95")}
           </p>
         </div>
 
-        <div className="bg-white p-5">
+        <div className="bg-canvas p-5">
           <p className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-slate">
             <Layers className="h-3.5 w-3.5" strokeWidth={2} />
-            Service Uptime
+            {t("dash.uptime")}
           </p>
           <p className="mt-2 text-xl font-semibold tracking-tight text-ink">{uptime}%</p>
           <p className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-accent">
             <ArrowUpRight className="h-3 w-3" strokeWidth={2.5} />
-            90-day SLA
+            {t("dash.sla")}
           </p>
         </div>
       </div>
@@ -144,9 +146,9 @@ export default function Dashboard() {
       <div className="border-t hairline bg-mist/40 px-6 pb-4 pt-5">
         <div className="mb-2 flex items-center justify-between">
           <p className="text-[11px] font-medium uppercase tracking-wider text-slate">
-            API Throughput — Requests/sec (live)
+            {t("dash.throughput")}
           </p>
-          <p className={`text-[11px] font-semibold ${delta >= 0 ? "text-accent" : "text-red-500"}`}>
+          <p className={`text-[11px] font-semibold ${delta >= 0 ? "text-accent" : "text-red-500 dark:text-red-400"}`}>
             {delta >= 0 ? "+" : ""}
             {delta.toFixed(0)} req/s
           </p>
@@ -178,8 +180,8 @@ export default function Dashboard() {
           />
         </svg>
         <div className="mt-2 flex items-center justify-between text-[10px] font-medium text-slate">
-          {["00:00", "04:00", "08:00", "12:00", "16:00", "20:00", "Now"].map((t) => (
-            <span key={t}>{t}</span>
+          {["00:00", "04:00", "08:00", "12:00", "16:00", "20:00", t("dash.now")].map((label) => (
+            <span key={label}>{label}</span>
           ))}
         </div>
       </div>

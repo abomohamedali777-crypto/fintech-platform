@@ -3,8 +3,8 @@ import LegalDocument from "@/components/LegalDocument";
 import { privacyPolicy } from "@/data/legal";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — Meridian",
-  description: "How Meridian processes personal and corporate data on its B2B FinTech infrastructure.",
+  title: "Privacy Policy — Mizan",
+  description: "How Mizan processes personal and corporate data on its B2B FinTech infrastructure.",
 };
 
 export default function PrivacyPage() {
