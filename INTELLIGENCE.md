@@ -187,18 +187,46 @@ corpus to production as authoritative data.**
 
 ### Manual ingestion path
 
-1. Apply `intel-schema.sql` (optional, only if you want the durable mirror).
-2. Write a live `SourceAdapter` that `fetchDocuments()`s authoritative text from
-   an approved institutional source (CB UAE, SCA, VARA, u.ae, ADGM, DFSA), or
-   drops approved `.md`/`.txt` files into the same `IngestInput` shape.
-3. Import your adapter + `IntelCorpus`, run
-   [`runIngestion(adapter, corpus, { persist })`](src/lib/intelligence/ingest.ts),
-   and wire the result into `getIntelCorpus()` in
-   `src/lib/intelligence/sources/default.ts` so fixtures are no longer seeded.
-4. Re-run the test suite (idempotency: unchanged content is skipped, changed
-   content bumps `version`).
+The shipped fixture corpus is replaced by an **admin CLI** that turns vetted
+source text into production corpus data without code edits:
 
-Design-time decisions a live adapter must respect:
+```bash
+# 1. Add authoritative text files to corpus/ (format: see corpus/README.md)
+# 2. Validate only — exits non-zero on any rejected file (gate for CI)
+npm run ingest -- --dry-run
+# 3. Ingest + upsert into Postgres
+npm run ingest -- --persist        # needs DATABASE_URL + intel-schema.sql
+# 4. Flip the engine onto the durable mirror (also set INTEL_PERSIST_DB=1 to
+#    keep the runtime mirror fresh via the API process)
+INTEL_CORPUS_MODE=db
+```
+
+File format:
+
+```text
+---
+title: Federal Decree-Law No. 14 of 2018 …
+publisher: Central Bank of the UAE
+jurisdiction: uae
+documentType: legislation
+publicationDate: 2018
+sourceUrl: https://www.centralbank.ae/…   # official portal, never a mirror
+canonicalId: uae-cbuae-dl14-2018            # optional stable id
+---
+
+<the authoritative document text>
+```
+
+With `INTEL_CORPUS_MODE=db` the engine serves **only** `intel_documents` /
+`intel_chunks`: fixtures are never seeded, and if the database is empty or
+unreachable it answers honestly (`insufficient`) instead of presenting dev
+text as research. Production without `db` mode logs a loud warning (and
+`STRICT_PROD_GUARD=1` fails the build).
+
+Writing a live `SourceAdapter` (scraping an approved portal) is still fully
+supported — `runIngestion(adapter, corpus, { persist })` accepts any adapter —
+and the `corpus-dir` adapter behind the CLI is itself a plain `SourceAdapter`.
+Design-time decisions a corpus file or live adapter must respect:
 
 - `sourceUrl` must be an official primary source. No mirrors, no aggregators,
   no fabricated deep links.
@@ -207,6 +235,8 @@ Design-time decisions a live adapter must respect:
 - `documentType ∈ { legislation, regulation, guidance, resolution, framework }`
 - jurisdiction is stable and derived from the authority (`.uae` → `uae`),
   keeping the domain → document-type mapping sound.
+- `canonicalId` keeps the durable row stable across re-ingests (update in
+  place instead of inserting a new row when titles drift).
 
 ---
 

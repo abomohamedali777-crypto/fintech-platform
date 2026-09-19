@@ -1,0 +1,15 @@
+---
+title: TITLE — replace with the full official instrument name
+publisher: PUBLISHER — official issuing authority
+jurisdiction: uae
+documentType: legislation
+publicationDate: YYYY
+sourceUrl: https://offical-portal.example/path (REPLACE with the official page)
+canonicalId: uae-<authority>-<slug>
+---
+
+PASTE THE AUTHORITATIVE TEXT OF THE INSTRUMENT HERE. This template is only a
+skeleton — rename this file (drop the leading underscore) and replace every
+placeholder, including this body, with the verbatim text of the official
+document before running `npm run ingest`. Content is validated to be at least
+80 characters, so placeholder text will never silently pass as a real document.

@@ -47,6 +47,8 @@ function readSalt(env: NodeJS.ProcessEnv): string {
   return raw ?? "mizan";
 }
 
+export type IntelCorpusMode = "fixture" | "db";
+
 export interface IntelConfig {
   maxQueryChars: number;
   maxBodyBytes: number;
@@ -66,12 +68,15 @@ export interface IntelConfig {
   cacheTtlMs: number;
   cacheMax: number;
   persistDb: boolean;
+  corpusMode: IntelCorpusMode;
 }
 
 export function intelConfig(env: NodeJS.ProcessEnv = process.env): IntelConfig {
   const providerKindRaw = env.INTEL_AI_PROVIDER?.trim().toLowerCase();
   const providerKind: ProviderKind =
     providerKindRaw === "openai-compatible" ? "openai-compatible" : "none";
+  const corpusMode: IntelCorpusMode =
+    env.INTEL_CORPUS_MODE?.trim().toLowerCase() === "db" ? "db" : "fixture";
 
   return {
     maxQueryChars: toPositiveInt(
@@ -118,6 +123,7 @@ export function intelConfig(env: NodeJS.ProcessEnv = process.env): IntelConfig {
         : DEFAULT_INTEL_CACHE_TTL_MS,
     cacheMax: toPositiveInt(env.INTEL_CACHE_MAX, DEFAULT_INTEL_CACHE_MAX),
     persistDb: env.INTEL_PERSIST_DB === "1",
+    corpusMode,
   };
 }
 
@@ -149,6 +155,15 @@ export function intelConfigWarnings(
   ) {
     warnings.push(
       "[intelligence] INTEL_AI_PROVIDER=openai-compatible but INTEL_AI_API_KEY is not set. The engine will run in local-synthesis mode.",
+    );
+  }
+
+  if (
+    env.NODE_ENV === "production" &&
+    env.INTEL_CORPUS_MODE?.trim().toLowerCase() !== "db"
+  ) {
+    warnings.push(
+      "[intelligence] INTEL_CORPUS_MODE is not 'db' while NODE_ENV=production — the engine serves development fixture summaries, not authoritative text. Ingest real sources (npm run ingest) and set INTEL_CORPUS_MODE=db before going live.",
     );
   }
 
