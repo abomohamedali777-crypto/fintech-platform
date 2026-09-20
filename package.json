@@ -1,4 +1,4 @@
-{
+﻿{
   "name": "fintech-platform",
   "version": "1.0.0",
   "private": true,
@@ -9,7 +9,15 @@
     "start": "next start",
     "lint": "eslint .",
     "test": "vitest run",
-    "ingest": "tsx scripts/ingest.ts"
+    "ingest": "tsx scripts/ingest.ts",
+    "serve": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/serve.ps1 start",
+    "serve:start": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/serve.ps1 start",
+    "serve:stop": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/serve.ps1 stop",
+    "serve:status": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/serve.ps1 status",
+    "serve:logs": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/serve.ps1 logs",
+    "serve:restart": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/serve.ps1 restart",
+    "serve:install": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/serve.ps1 install",
+    "serve:uninstall": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/serve.ps1 uninstall"
   },
   "dependencies": {
     "framer-motion": "^13.2.0",
@@ -39,3 +47,4 @@
     "esbuild@0.28.2": true
   }
 }
+
