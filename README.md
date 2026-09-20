@@ -58,7 +58,12 @@ a fake 200 and are never persisted. Responses are documented in
 
 `POST /api/intelligence` is the Legal & Regulatory Intelligence Engine
 (source-grounded RAG; UAE first). See [INTELLIGENCE.md](./INTELLIGENCE.md) for
-architecture, the fixture corpus caveat, and the manual ingestion steps.
+architecture, the fixture corpus caveat, and the ingestion steps.
+
+## Deployment
+
+Operator runbook (cloud setup, environment variables, corpus step, smoke
+checklist, payments roadmap): [DEPLOY.md](./DEPLOY.md).
 
 ## Database
 
